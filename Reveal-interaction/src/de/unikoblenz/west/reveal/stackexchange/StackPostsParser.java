@@ -1,7 +1,6 @@
 package de.unikoblenz.west.reveal.stackexchange;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;

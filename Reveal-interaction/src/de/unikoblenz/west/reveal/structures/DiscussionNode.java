@@ -1,7 +1,6 @@
 package de.unikoblenz.west.reveal.structures;
 
 import java.util.Date;
-import java.util.HashSet;
 import java.util.TreeSet;
 
 public class DiscussionNode extends CommunityObject {

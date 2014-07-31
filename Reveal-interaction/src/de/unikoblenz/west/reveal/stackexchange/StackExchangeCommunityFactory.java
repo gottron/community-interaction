@@ -19,7 +19,6 @@ import org.xml.sax.XMLReader;
 import de.unikoblenz.west.reveal.structures.Community;
 import de.unikoblenz.west.reveal.structures.DiscussionNode;
 import de.unikoblenz.west.reveal.structures.User;
-import de.unikoblenz.west.reveal.structures.annotations.Annotation;
 import de.unikoblenz.west.reveal.structures.annotations.StackExchangeDiscussionNodeAnnotation;
 import de.unikoblenz.west.reveal.structures.annotations.StackExchangePostAnnotation;
 import de.unikoblenz.west.reveal.structures.annotations.StackExchangeUserAnnotation;

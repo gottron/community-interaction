@@ -293,7 +293,7 @@ public class CommunityAnalysis {
 			    	entryCnt++;
 			    }
 	    	}
-		    headerOut.println(community.getName()+" ("+userIds.size()+" users"+(minContribs>0?(" with at least "+minContribs+" contributions"):"")+")");
+		    headerOut.println(community.getName()+" ("+entryCnt+" users"+(minContribs>0?(" with at least "+minContribs+" contributions"):"")+")");
 		    
 		    dataOut.close();
 		    headerOut.close();
