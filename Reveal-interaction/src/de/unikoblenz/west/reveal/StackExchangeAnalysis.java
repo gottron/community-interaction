@@ -54,8 +54,11 @@ public class StackExchangeAnalysis {
 				formatter.printHelp( "StackExchangeAnalysis", options );
 			} else {
 				Community seCommunity = StackExchangeCommunityFactory.parseCommunity(name, userFile, postFile, commentFile);
-				CommunityAnalysis.analyseDiscussionTrees(seCommunity, new File(name+"-dt.csv"), new File(name+"-dt-header.txt"));
-				CommunityAnalysis.analyseUsers(seCommunity, new File(name+"-u.csv"), new File(name+"-u-header.txt"));
+				for (int minLimit = 0; minLimit < 3; minLimit++) {
+					System.out.println("Using minlimit: "+minLimit);
+					CommunityAnalysis.analyseDiscussionTrees(seCommunity, new File("data-out/"+name+"-dt-"+minLimit+".csv"), new File("data-out/"+name+"-dt-header-"+minLimit+".txt"),minLimit);
+					CommunityAnalysis.analyseUsers(seCommunity, new File("data-out/"+name+"-u-"+minLimit+".csv"), new File("data-out/"+name+"-u-header-"+minLimit+".txt"),minLimit);
+				}
 			}
 		} catch (ParseException e) {
 			e.printStackTrace();

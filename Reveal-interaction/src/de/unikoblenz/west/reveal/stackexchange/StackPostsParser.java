@@ -106,7 +106,14 @@ public class StackPostsParser extends DefaultHandler {
 				post.title = attributes.getValue(ATT_TITLE);
 			}
 			if (attributes.getIndex(ATT_TAGS)>=0) {
-				post.tags = attributes.getValue(ATT_TAGS);
+				String sTags= attributes.getValue(ATT_TAGS);
+				if (sTags.startsWith("<")) {
+					sTags = sTags.substring(1);
+				}
+				if (sTags.endsWith(">")) {
+					sTags = sTags.substring(0,sTags.length()-1);
+				}
+				post.tags = sTags.split("><");
 			}
 			if (attributes.getIndex(ATT_ANSWER_COUNT)>=0) {
 				post.answerCount = Integer.parseInt(attributes.getValue(ATT_ANSWER_COUNT));

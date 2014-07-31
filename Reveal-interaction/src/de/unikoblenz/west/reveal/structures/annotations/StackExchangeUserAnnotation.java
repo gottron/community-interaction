@@ -11,7 +11,7 @@ public class StackExchangeUserAnnotation extends Annotation {
 	public int upVotes = 0;
 	public int downVotes = 0;
 	public int reputation = 0;
-	public long accountAge = 0;
-	public long lastAccess = 0;	
+	public double accountAge = 0;
+	public double lastAccess = 0;	
 	
 }

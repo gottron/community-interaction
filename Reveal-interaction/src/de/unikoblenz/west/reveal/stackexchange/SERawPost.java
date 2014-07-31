@@ -29,7 +29,7 @@ public class SERawPost {
 	public Date communityOwnedDate = null;
 	public Date closedDate = null;
 	public String title = null;
-	public String tags = null;
+	public String[] tags = new String[0];
 	public int answerCount = 0;
 	public int commentCount = 0;
 	public int favoriteCount = 0;

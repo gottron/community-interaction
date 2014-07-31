@@ -7,5 +7,6 @@ public class StackExchangePostAnnotation extends StackExchangeDiscussionNodeAnno
 	public int favoriteCount = 0;
 	public int tagCount = 0;
 	public int views = 0;
+	public boolean isCorrectAnswer = false;
 	
 }

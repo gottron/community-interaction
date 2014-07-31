@@ -33,4 +33,21 @@ public class DiscussionTree implements Comparable<DiscussionTree>{
 		return this.root.compareTo(o.root);
 	}
 	
+	
+	/**
+	 * Checks if any of the nodes in this tree is part of a birectional conversation.
+	 * 
+	 * @return
+	 */
+	public boolean isBidirectional() {
+		boolean result = false;
+		TreeSet<DiscussionNode> nodes = this.allContributions();
+		for (DiscussionNode node : nodes) {
+			if (node.isBidirectionalContribution()) {
+				return true;
+			}
+		}
+		return result;
+	}
+	
 }

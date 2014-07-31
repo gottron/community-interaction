@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TreeSet;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -18,6 +19,10 @@ import org.xml.sax.XMLReader;
 import de.unikoblenz.west.reveal.structures.Community;
 import de.unikoblenz.west.reveal.structures.DiscussionNode;
 import de.unikoblenz.west.reveal.structures.User;
+import de.unikoblenz.west.reveal.structures.annotations.Annotation;
+import de.unikoblenz.west.reveal.structures.annotations.StackExchangeDiscussionNodeAnnotation;
+import de.unikoblenz.west.reveal.structures.annotations.StackExchangePostAnnotation;
+import de.unikoblenz.west.reveal.structures.annotations.StackExchangeUserAnnotation;
 
 public class StackExchangeCommunityFactory {
 	
@@ -49,13 +54,37 @@ public class StackExchangeCommunityFactory {
 		    System.out.println("Constructing community object... ");
 		    result = new Community("StackExchange Community "+name);
 		    
+		    Date now = new Date();
+
 		    for (SERawUser seUser : userParser.users) {
 		    	User user = result.createUser(seUser.id);
 		    	user.accountName = seUser.displayName;
+		    	StackExchangeUserAnnotation annotation = new StackExchangeUserAnnotation();
+		    	annotation.accountAge = dateToAge(seUser.creationDate, now);
+		    	annotation.age = seUser.age;
+		    	annotation.downVotes = seUser.downVotes;
+		    	annotation.hasAboutMe = seUser.aboutMe != null;
+		    	annotation.hasLocation = seUser.location != null;
+		    	annotation.hasWebSite = seUser.websiteUrl != null;
+		    	annotation.lastAccess = dateToAge(seUser.lastAccessDate, now);
+		    	annotation.reputation = seUser.reputation;
+		    	annotation.upVotes = seUser.upVotes;
+		    	annotation.views = seUser.views;
+		    	user.annotation = annotation;
+		    }
+
+		    /*
+		     * First round: collect all ids of correct answers
+		     */
+		    TreeSet<Long> correctAnswerIds = new TreeSet<Long>();
+		    for (SERawPost sePost : postParser.posts) {
+		    	if (sePost.postTypeId == SERawPost.QUESTION_ID) {
+		    		correctAnswerIds.add((long) sePost.acceptedAnswerId);
+		    	}
 		    }
 		    
 		    for (SERawPost sePost : postParser.posts) {
-		    	
+
 		    	DiscussionNode node = null;
 		    	if (result.existsDiscussionNode(sePost.id)) {
 		    		node = result.getDiscussionNode(sePost.id);
@@ -67,10 +96,23 @@ public class StackExchangeCommunityFactory {
 		    	if ( result.existsUser(sePost.ownerUserId)) {
 		    		author = result.getUser(sePost.ownerUserId);
 		    	} else {
-			    	User user = result.createUser(sePost.ownerUserId);
-			    	user.accountName = Community.ANONYMOUS_ACCOUNT;
+			    	author = result.createUser(sePost.ownerUserId);
+			    	author.accountName = Community.ANONYMOUS_ACCOUNT;
 		    	}
 		    	node.setUser(author);
+
+		    	StackExchangePostAnnotation annotation = new StackExchangePostAnnotation();
+		    	annotation.acceptedAnswerId = sePost.acceptedAnswerId;
+		    	annotation.bodyContentLength = sePost.title!=null?sePost.body.length():0;
+		    	annotation.favoriteCount = sePost.favoriteCount;
+		    	annotation.score = sePost.score;
+		    	annotation.tagCount = sePost.tags.length;
+		    	annotation.titleContentLength = sePost.title!=null?sePost.title.length():0;
+		    	annotation.views = sePost.viewCount;
+		    	if (correctAnswerIds.contains(node.getId())) {
+		    		annotation.isCorrectAnswer = true;
+		    	}
+		    	node.annotation = annotation;
 		    	
 		    	switch (sePost.postTypeId) {
 	    		case SERawPost.QUESTION_ID :
@@ -107,11 +149,15 @@ public class StackExchangeCommunityFactory {
 		    	if ( result.existsUser(seComment.userId)) {
 		    		author = result.getUser(seComment.userId);
 		    	} else {
-			    	User user = result.createUser(seComment.userId);
-			    	user.accountName = Community.ANONYMOUS_ACCOUNT;
+			    	author = result.createUser(seComment.userId);
+			    	author.accountName = Community.ANONYMOUS_ACCOUNT;
 		    	}
 		    	node.setUser(author);
 
+		    	StackExchangeDiscussionNodeAnnotation annotation = new StackExchangeDiscussionNodeAnnotation();
+		    	annotation.bodyContentLength = seComment.text!=null?seComment.text.length():0;
+		    	annotation.score = seComment.score;
+		    	node.annotation = annotation;
 		    	
 		    	DiscussionNode parent = null;
 		    	if (result.existsDiscussionNode(seComment.postId)) {
