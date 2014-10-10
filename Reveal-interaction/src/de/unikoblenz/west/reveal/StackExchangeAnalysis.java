@@ -53,12 +53,15 @@ public class StackExchangeAnalysis {
 				HelpFormatter formatter = new HelpFormatter();
 				formatter.printHelp( "StackExchangeAnalysis", options );
 			} else {
+				long init = System.currentTimeMillis();
 				Community seCommunity = StackExchangeCommunityFactory.parseCommunity(name, userFile, postFile, commentFile);
-				for (int minLimit = 0; minLimit < 3; minLimit++) {
+				for (int minLimit = 1; minLimit < 2; minLimit++) {
 					System.out.println("Using minlimit: "+minLimit);
 					CommunityAnalysis.analyseDiscussionTrees(seCommunity, new File("data-out/"+name+"-dt-"+minLimit+".csv"), new File("data-out/"+name+"-dt-header-"+minLimit+".txt"),minLimit);
 					CommunityAnalysis.analyseUsers(seCommunity, new File("data-out/"+name+"-u-"+minLimit+".csv"), new File("data-out/"+name+"-u-header-"+minLimit+".txt"),minLimit);
 				}
+				long tick = System.currentTimeMillis();
+				System.out.println("Time: "+(tick-init)+" ms");
 			}
 		} catch (ParseException e) {
 			e.printStackTrace();

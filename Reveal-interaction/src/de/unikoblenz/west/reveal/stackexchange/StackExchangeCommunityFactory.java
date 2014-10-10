@@ -101,6 +101,8 @@ public class StackExchangeCommunityFactory {
 		    	node.setUser(author);
 
 		    	StackExchangePostAnnotation annotation = new StackExchangePostAnnotation();
+		    	annotation.timestamp = sePost.creationDate.getTime();
+		    	annotation.bodyContent = sePost.body;
 		    	annotation.acceptedAnswerId = sePost.acceptedAnswerId;
 		    	annotation.bodyContentLength = sePost.title!=null?sePost.body.length():0;
 		    	annotation.favoriteCount = sePost.favoriteCount;

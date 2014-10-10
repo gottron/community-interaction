@@ -3,6 +3,7 @@ package de.unikoblenz.west.reveal.analytics;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.TreeSet;
 
 import de.unikoblenz.west.reveal.structures.Community;
@@ -111,7 +112,8 @@ public class CommunityAnalysis {
 	    	
 		    
 	    	
-	    	String header = "#  posts "
+	    	String header = "#  accountName"
+	    			+ "\t posts "
 	    			+ "\t questions "
 	    			+ "\t answers "
 	    			+ "\t comments "
@@ -124,6 +126,7 @@ public class CommunityAnalysis {
 	    			+ "\t biDirPostsRatio "
 	    			+ "\t biDirNeighbourRatio "
 	    			+ "\t avgPostsPerThread "
+	    			+ "\t stddevPostsPerThread "
 	    			+ "\t avgAnswersPerQuestion "
 	    			+ "\t avgCommentsPerPost ";
 		    switch (mode) {
@@ -171,6 +174,7 @@ public class CommunityAnalysis {
 	    		TreeSet<User> replyingUsers = new TreeSet<User>();
 	    		TreeSet<User> neighbourUsers = new TreeSet<User>();
 	    		TreeSet<User> biDirectionalUsers = new TreeSet<User>();
+	    		
 	    		for (DiscussionNode node : contributions) {
 	    			totalContributions++;
 	    			switch (node.type) {
@@ -240,13 +244,26 @@ public class CommunityAnalysis {
 	    		TreeSet<DiscussionTree> discussions = community.getUserDiscussionTrees(user);
 	    		int discussionCount = discussions.size();
 	    		int discussionSizeTotal = 0;
+	    		double s1 = 0;
+	    		double s2 = 0;
+	    		int N = 0;
+	    		
 	    		for (DiscussionTree discussion : discussions) {
-	    			discussionSizeTotal += discussion.size();
+	    			int size = discussion.size();
+	    			discussionSizeTotal += size;
+	    			N++;
+	    			s1 += size;
+	    			s2 += Math.pow(size, 2);
 	    		}
 	    		double avgPostPerThread = discussionCount>0?((double) discussionSizeTotal)/discussionCount:0;
+	    		// Fast computation of stddev according to wikipedia
+	    		double stddevPostPerThread = 0;
+	    		if (N >= 2) {
+	    			stddevPostPerThread = Math.sqrt( (N*s2 - Math.pow(s1, 2)) / (N*(N-1))  );
+	    		}
 	    		
-	    		
-	    		String stats = postCount +
+	    		String stats = user.accountName + 
+	    				"\t" + postCount +
 	    				"\t"+ questionCount +
 	    				"\t"+ answerCount +
 	    				"\t"+ commentCount +
@@ -259,6 +276,7 @@ public class CommunityAnalysis {
 	    				"\t"+biDirThreadRatio+
 	    				"\t"+biDirNeighbourRatio+
 	    				"\t"+avgPostPerThread+
+	    				"\t"+stddevPostPerThread+
 	    				"\t"+avgRepliesPerQuestion+
 	    				"\t"+avgCommentsPerPost;
 			    switch (mode) {
