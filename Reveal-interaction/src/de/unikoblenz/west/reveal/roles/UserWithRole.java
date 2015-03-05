@@ -20,6 +20,7 @@ public class UserWithRole {
 	public static final String LEVEL_HIGH = "high";
 	
 	public String username = "";
+	public long id = 0;
 	public String community = "";
 
 	public int contributions = 0;
@@ -48,6 +49,7 @@ public class UserWithRole {
 	public String toString() {
 		StringBuffer result = new StringBuffer();
 		result.append(this.username);
+		result.append(" (ID="+id+") ");
 		result.append(" in "+this.community);
 		result.append(" ("+role+"):");
 		result.append(" idr="+this.inDegreeRatio);

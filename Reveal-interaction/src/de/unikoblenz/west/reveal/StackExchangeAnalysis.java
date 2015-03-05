@@ -1,6 +1,8 @@
 package de.unikoblenz.west.reveal;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -12,6 +14,9 @@ import org.apache.commons.cli.ParseException;
 import de.unikoblenz.west.reveal.analytics.CommunityAnalysis;
 import de.unikoblenz.west.reveal.stackexchange.StackExchangeCommunityFactory;
 import de.unikoblenz.west.reveal.structures.Community;
+import de.unikoblenz.west.reveal.structures.DiscussionNode;
+import de.unikoblenz.west.reveal.structures.DiscussionTree;
+import de.unikoblenz.west.reveal.structures.annotations.StackExchangePostAnnotation;
 
 public class StackExchangeAnalysis {
 
@@ -55,6 +60,9 @@ public class StackExchangeAnalysis {
 			} else {
 				long init = System.currentTimeMillis();
 				Community seCommunity = StackExchangeCommunityFactory.parseCommunity(name, userFile, postFile, commentFile);
+				CommunityAnalysis.authorText(seCommunity, new File("data-out/"+name+"-aggrText.csv"));
+				CommunityAnalysis.replyNetwork(seCommunity, new File("data-out/"+name+"-reply.csv"));
+				CommunityAnalysis.communityToCsv(seCommunity, new File("data-out/"+name+"-ncsrd-1.csv"));
 				for (int minLimit = 1; minLimit < 2; minLimit++) {
 					System.out.println("Using minlimit: "+minLimit);
 					CommunityAnalysis.analyseDiscussionTrees(seCommunity, new File("data-out/"+name+"-dt-"+minLimit+".csv"), new File("data-out/"+name+"-dt-header-"+minLimit+".txt"),minLimit);
@@ -67,6 +75,5 @@ public class StackExchangeAnalysis {
 			e.printStackTrace();
 		}
 	}
-	
 	
 }

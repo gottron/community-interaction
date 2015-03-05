@@ -1,9 +1,11 @@
 package de.unikoblenz.west.reveal.analytics;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import de.unikoblenz.west.reveal.structures.Community;
@@ -19,6 +21,65 @@ public class CommunityAnalysis {
 
 	public static final byte BASE_MODE = 1;
 	public static final byte STACK_EXCHANGE_MODE = 2;
+	
+	public static void authorText(Community community, File fDataOut)  {
+	    System.out.println("Writing out Aggregated User Texts ... ");
+	    try {
+			PrintStream out = new PrintStream(fDataOut);
+			out.println("# AuthorId\t Aggr. Text");
+		    for (long uid : community.getUserIds()) {
+		    	User u = community.getUser(uid);
+		    	StringBuilder buffer = new StringBuilder();
+		    	for (DiscussionNode n : community.getUserContributions(u)) {
+		    		buffer.append( ((StackExchangeDiscussionNodeAnnotation) n.annotation).bodyContent+ " ");
+		    	}
+		    	String aggr = buffer.toString().replaceAll("\\s", " ").trim();
+		    	if (aggr.length()>0) {
+		    		out.println(u.getId()+"\t"+aggr);
+		    	}
+		    }
+			out.close();
+	    } catch (IOException ioe) {
+	    	ioe.printStackTrace();
+	    }
+	}
+	
+
+	
+	public static void replyNetwork(Community community, File fDataOut)  {
+	    System.out.println("Writing out Reply Network... ");
+		TreeMap<Long, TreeSet<Long>> adjacency = new TreeMap<Long, TreeSet<Long>>();
+		for (DiscussionTree tree: community.getDiscussionTrees()) {
+			CommunityAnalysis.discussionNetwork(tree.root, adjacency);
+		}
+		try {
+			PrintStream out = new PrintStream(fDataOut);
+			out.println("# ReplierId\tAuthorId");
+			for (long responderId : adjacency.keySet()) {
+				for (long authorId : adjacency.get(responderId)) {
+					out.println(responderId+"\t"+authorId);
+				}
+			}
+			out.close();
+	    } catch (IOException ioe) {
+	    	ioe.printStackTrace();
+	    }
+	}
+	
+	public static void discussionNetwork(DiscussionNode node, TreeMap<Long, TreeSet<Long>> adjacency) {
+		long authorId = node.getUser().getId();
+		for (DiscussionNode child : node.directChildren()) {
+			long responderId = child.getUser().getId();
+			if (! adjacency.containsKey(responderId)) {
+				TreeSet<Long> list = new TreeSet<Long>();
+				adjacency.put(responderId, list);
+			}
+			adjacency.get(responderId).add(authorId);
+			CommunityAnalysis.discussionNetwork(child, adjacency);
+		}
+	}
+
+
 	
 	public static void analyseDiscussionTrees(Community community, File fDataOut, File fHeaderOut, int minSize) {
 	    System.out.println("Writing out DiscussionTrees... ");
@@ -91,6 +152,36 @@ public class CommunityAnalysis {
 	    	ioe.printStackTrace();
 	    }
 	}
+	
+	public static void communityToCsv(Community com,File fout) {
+	    System.out.println("Writing out NCSR'D csv format... ");
+	    try {
+			PrintStream out = new PrintStream(fout,"UTF8");
+			out.print("PostId"+"\t");
+			out.print("ParentId"+"\t");
+			out.print("UserId"+"\t");
+			out.print("Timestamp"+"\t");
+			out.print("Content"+"\n");
+			for (DiscussionTree tree : com.getDiscussionTrees()) {
+				for (DiscussionNode node : tree.allContributions()) {
+					out.print(node.getId()+"\t");
+					out.print((node.getParent()!=null?node.getParent().getId():CommunityAnalysis.csvText("NA"))+"\t");
+					out.print(node.getUser().getId()+"\t");
+					out.print(((node.annotation instanceof StackExchangeDiscussionNodeAnnotation)?((StackExchangeDiscussionNodeAnnotation) node.annotation).timestamp:CommunityAnalysis.csvText("NA"))+"\t");
+					out.print(CommunityAnalysis.csvText((node.annotation instanceof StackExchangeDiscussionNodeAnnotation)?((StackExchangeDiscussionNodeAnnotation) node.annotation).bodyContent:"NA")+"\n");
+				}
+			}
+			out.close();
+	    } catch (IOException ioe) {
+	    	ioe.printStackTrace();
+	    }
+	}
+	
+	public static String csvText(String in) {
+		String mask = in.replaceAll("\\s", " ").replaceAll("\\\"", "\\\\\"");
+		String result = "\""+mask +"\"";
+		return result;
+	}
 
 	public static void analyseUsers(Community community, File fDataOut, File fHeaderOut, int minContribs) {
 	    System.out.println("Writing out Users... ");
@@ -98,8 +189,8 @@ public class CommunityAnalysis {
 	    
 	    int entryCnt = 0;
 	    try{
-		    PrintStream dataOut = new PrintStream(fDataOut);
-		    PrintStream headerOut = new PrintStream(fHeaderOut);
+		    PrintStream dataOut = new PrintStream(fDataOut,"UTF8");
+		    PrintStream headerOut = new PrintStream(fHeaderOut,"UTF8");
 	    	TreeSet<Long> userIds = community.getUserIds();
 	
 		    User sample = community.getUser(userIds.iterator().next());
@@ -113,6 +204,7 @@ public class CommunityAnalysis {
 		    
 	    	
 	    	String header = "#  accountName"
+	    			+ "\t id "
 	    			+ "\t posts "
 	    			+ "\t questions "
 	    			+ "\t answers "
@@ -263,6 +355,7 @@ public class CommunityAnalysis {
 	    		}
 	    		
 	    		String stats = user.accountName + 
+	    				"\t" + user.getId() +
 	    				"\t" + postCount +
 	    				"\t"+ questionCount +
 	    				"\t"+ answerCount +

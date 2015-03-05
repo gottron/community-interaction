@@ -25,7 +25,7 @@ import de.unikoblenz.west.reveal.structures.annotations.StackExchangeUserAnnotat
 
 public class StackExchangeCommunityFactory {
 	
-	public static final long COMMENT_ID_OFFSET = 1000000000l;
+	public static final long COMMENT_ID_OFFSET = 10000000000l;
 
 	public static Community parseCommunity(String name, String userFilename, String postFilename, String commentFilename) {
 		Community result = null;
@@ -102,9 +102,9 @@ public class StackExchangeCommunityFactory {
 
 		    	StackExchangePostAnnotation annotation = new StackExchangePostAnnotation();
 		    	annotation.timestamp = sePost.creationDate.getTime();
-		    	annotation.bodyContent = sePost.body;
+		    	annotation.bodyContent = sePost.body!=null?sePost.body:"";
 		    	annotation.acceptedAnswerId = sePost.acceptedAnswerId;
-		    	annotation.bodyContentLength = sePost.title!=null?sePost.body.length():0;
+		    	annotation.bodyContentLength = sePost.body!=null?sePost.body.length():0;
 		    	annotation.favoriteCount = sePost.favoriteCount;
 		    	annotation.score = sePost.score;
 		    	annotation.tagCount = sePost.tags.length;
@@ -156,7 +156,9 @@ public class StackExchangeCommunityFactory {
 		    	node.setUser(author);
 
 		    	StackExchangeDiscussionNodeAnnotation annotation = new StackExchangeDiscussionNodeAnnotation();
+		    	annotation.timestamp = seComment.creationDate.getTime();
 		    	annotation.bodyContentLength = seComment.text!=null?seComment.text.length():0;
+		    	annotation.bodyContent = seComment.text!=null?seComment.text:"";
 		    	annotation.score = seComment.score;
 		    	node.annotation = annotation;
 		    	

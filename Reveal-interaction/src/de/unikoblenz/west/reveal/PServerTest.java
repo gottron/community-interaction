@@ -51,7 +51,8 @@ public class PServerTest {
 	public static void roleAnalysis(PServerRoleClient pClient) throws IOException {
 //		UserAnalysisFileReader uafr = new UserAnalysisFileReader(new File("data-out/Travel-u-1.csv"), "Travel (StackExchange), contribs >= 1");
 //		UserAnalysisFileReader uafr = new UserAnalysisFileReader(new File("data-out/Apple-u-1.csv"), "Apple (StackExchange), contribs >= 1");
-		UserAnalysisFileReader uafr = new UserAnalysisFileReader(new File("data-out/Math-u-1.csv"), "Math (StackExchange), contribs >= 1");
+//		UserAnalysisFileReader uafr = new UserAnalysisFileReader(new File("data-out/Math-u-1.csv"), "Math (StackExchange), contribs >= 1");
+		UserAnalysisFileReader uafr = new UserAnalysisFileReader(new File("data-out/snow-u-1.csv"), "SNOW (Twitter), contribs >= 1");
 		HashSet<UserWithRole> users = new HashSet<UserWithRole>();
 		
 		long init = System.currentTimeMillis();
@@ -76,8 +77,9 @@ public class PServerTest {
 		int supporter = 0;
 		int taciturn = 0;
 		int none = 0;
-		PrintStream csvOut = new PrintStream("roles-classification.csv");
+		PrintStream csvOut = new PrintStream("roles-classification.csv","UTF8");
 		csvOut.print("Role\t");
+		csvOut.print("ID\t");
 		csvOut.print("Username\t");
 		csvOut.print("AvgPostPerThread\t");
 		csvOut.print("BidirNeighbourRatio\t");
@@ -132,6 +134,7 @@ public class PServerTest {
 	
 	public static void writeUser(UserWithRole user, PrintStream out) {
 		out.print("\""+user.role+"\"\t");
+		out.print("\""+user.id+"\"\t");
 		out.print("\""+user.username+"\"\t");
 		out.print(user.avgPostPerThread+"\t");
 		out.print(user.bidirNeighbourRatio+"\t");
