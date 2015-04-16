@@ -128,7 +128,7 @@ public class DiscussionNode extends CommunityObject {
 
 	/**
 	 * The set of Date objects related to all children contained in this
-	 * dicussion structure. Gives an idea of when activity occurred.
+	 * discussion structure. Gives an idea of when activity occurred.
 	 * 
 	 * @return
 	 */
