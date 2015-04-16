@@ -5,9 +5,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import de.unikoblenz.west.reveal.roles.UserWithFeatures;
+import de.unikoblenz.west.reveal.roles.UserWithRole;
 import de.unikoblenz.west.reveal.structures.Community;
 import de.unikoblenz.west.reveal.structures.DiscussionNode;
 import de.unikoblenz.west.reveal.structures.DiscussionTree;
@@ -183,6 +186,110 @@ public class CommunityAnalysis {
 		return result;
 	}
 
+	
+	public static HashSet<UserWithFeatures> analyseUserFeatures(Community community, int minContribs) {
+		HashSet<UserWithFeatures> result = new HashSet<UserWithFeatures>();
+	    System.out.println("Writing out Users... ");
+    	TreeSet<Long> userIds = community.getUserIds();
+    	for (long id : userIds) {
+    		UserWithFeatures userFeatures = new UserWithFeatures();
+    		userFeatures.userId = id;
+    		
+    		User user = community.getUser(id);
+    		
+    		TreeSet<DiscussionNode> contributions = community.getUserContributions(user);
+    		userFeatures.postCount = contributions.size();
+    		int postWithReplyCount = 0;
+    		int postCommentsCount = 0;
+    		int answersForUserQuestions = 0;
+    		int biDirThreadCount = 0;
+	    		
+    		TreeSet<User> replyingUsers = new TreeSet<User>();
+    		TreeSet<User> neighbourUsers = new TreeSet<User>();
+    		TreeSet<User> biDirectionalUsers = new TreeSet<User>();
+	    		
+    		for (DiscussionNode node : contributions) {
+    			userFeatures.totalContributions++;
+    			switch (node.type) {
+    			case DiscussionNode.TYPE_QUESTION : 
+    				userFeatures.questionCount++;
+    				break;
+    			case DiscussionNode.TYPE_ANSWER : 
+    				userFeatures.answerCount++;
+    				break;
+    			case DiscussionNode.TYPE_COMMENT : 
+    				userFeatures.commentCount++;
+    				break;
+    			}
+    			TreeSet<DiscussionNode> replies = node.directChildren(); 
+    			if (replies.size()>0) {
+    				postWithReplyCount++;
+    				int biDirThreadInc = 0;
+    				User biDirCandidate = null;
+    				if (node.getParent() != null) {
+    					biDirCandidate = node.getParent().getUser();
+    					neighbourUsers.add(biDirCandidate);
+    				}
+    				for (DiscussionNode reply : replies) {
+    					User replier=reply.getUser();
+    					replyingUsers.add(replier);
+    					neighbourUsers.add(replier);
+    					if (replier == biDirCandidate) {
+    						biDirectionalUsers.add(biDirCandidate);
+    	    				biDirThreadInc = 1;
+    					}
+    					if (reply.type == DiscussionNode.TYPE_COMMENT) {
+    						postCommentsCount++;
+    					} else if (reply.type == DiscussionNode.TYPE_ANSWER) {
+    						answersForUserQuestions++;
+    					}
+    				}
+					biDirThreadCount += biDirThreadInc;
+    			}
+    		}
+    		
+    		userFeatures.neighbourCount = neighbourUsers.size();
+    		userFeatures.replyingUserCount = replyingUsers.size();
+    		int biDirUserCount = biDirectionalUsers.size();
+    		userFeatures.inDegreeRatio = ((double) userFeatures.replyingUserCount)/(userIds.size());
+    		userFeatures.postsReplyRatio = userFeatures.postCount > 0?((double) postWithReplyCount)/userFeatures.postCount:0;
+    		userFeatures.threadInitiationRatio = userFeatures.postCount > 0?((double) userFeatures.questionCount)/userFeatures.postCount:0;
+    		userFeatures.avgCommentsPerPost =  userFeatures.postCount > 0?((double) postCommentsCount)/userFeatures.postCount:0;
+    		userFeatures.avgRepliesPerQuestion =  userFeatures.questionCount > 0?((double) answersForUserQuestions)/userFeatures.questionCount:0;
+    		userFeatures.biDirNeighbourRatio =  userFeatures.neighbourCount > 0?((double) biDirUserCount)/userFeatures.neighbourCount:0;
+    		/*
+    		 * TODO: Update required! Here actually bidir Posts -- not threads (not the same if multiple posts in same discussion thread)
+    		 */
+    		userFeatures.biDirThreadRatio =  userFeatures.postCount > 0?((double) biDirThreadCount)/userFeatures.postCount:0;
+	    		
+    		TreeSet<DiscussionTree> discussions = community.getUserDiscussionTrees(user);
+    		int discussionCount = discussions.size();
+    		int discussionSizeTotal = 0;
+    		double s1 = 0;
+    		double s2 = 0;
+    		int N = 0;
+	    		
+    		for (DiscussionTree discussion : discussions) {
+    			int size = discussion.size();
+    			discussionSizeTotal += size;
+    			N++;
+    			s1 += size;
+    			s2 += Math.pow(size, 2);
+    		}
+    		userFeatures.avgPostPerThread = discussionCount>0?((double) discussionSizeTotal)/discussionCount:0;
+    		// Fast computation of stddev according to wikipedia
+    		userFeatures.stddevPostsPerThread = 0;
+    		if (N >= 2) {
+    			userFeatures.stddevPostsPerThread = Math.sqrt( (N*s2 - Math.pow(s1, 2)) / (N*(N-1))  );
+    		}
+	    		
+  		    if ( (userFeatures.totalContributions >= minContribs) ) {
+  		    	result.add(userFeatures);
+	    	}
+    	}
+    	return result;
+	}
+	
 	public static void analyseUsers(Community community, File fDataOut, File fHeaderOut, int minContribs) {
 	    System.out.println("Writing out Users... ");
 	    byte mode = BASE_MODE;
