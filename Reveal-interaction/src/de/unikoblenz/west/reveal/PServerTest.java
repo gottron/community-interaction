@@ -16,13 +16,10 @@ public class PServerTest {
 
 	public static void main(String[] args) throws IOException {
 		PServerConfiguration config = new PServerConfiguration();
-//		config.setHost("http://idefix.iit.demokritos.gr:1111/");
-		PServerRoleClient pservRoleClient = new PServerRoleClient(config);
 //		pservRoleClient.initializePserverModel();
+		PServerRoleClient pservRoleClient = new PServerRoleClient(config);
 		PServerTest.roleAnalysis(pservRoleClient);
 //		PServerTest.retrieveData(pservRoleClient);
-
-		
 	}
 	
 	public static void retrieveData(PServerRoleClient pClient) throws IOException {
